@@ -37,11 +37,13 @@ const App = () => {
   const [notification2, setNotification2] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [chatStarted, setChatStarted] = useState(false);
 
   const feedRef = useRef(null);
   const scrollInterval = useRef(null);
   const audioRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const chatIntervalRef = useRef(null);
 
   const storyTexts = [
     { text: "A single drop can change everything...", delay: 500 },
@@ -102,7 +104,7 @@ const App = () => {
       audioRef.current.src = '/music.mp3';
       audioRef.current.onerror = () => {
         console.warn('Local music not found, using fallback.');
-        audioRef.current.src = 'music.mp3';
+        audioRef.current.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
         audioRef.current.load();
       };
       audioRef.current.load();
@@ -138,7 +140,7 @@ const App = () => {
     </button>
   );
 
-  // ---- Rest of the effects (unchanged) ----
+  // ---- Earth rotation ----
   useEffect(() => {
     if (currentScene === 0) {
       const interval = setInterval(() => {
@@ -148,6 +150,7 @@ const App = () => {
     }
   }, [currentScene]);
 
+  // ---- Water drop trail ----
   useEffect(() => {
     if (currentScene === 0 && showWaterDrop) {
       const interval = setInterval(() => {
@@ -163,6 +166,7 @@ const App = () => {
     }
   }, [currentScene, showWaterDrop, waterDroplet]);
 
+  // ---- Water drop animation ----
   useEffect(() => {
     if (currentScene === 0 && showWaterDrop) {
       const interval = setInterval(() => {
@@ -343,30 +347,45 @@ const App = () => {
     }
   }, [currentScene]);
 
-  // ---- CHAT EFFECT ----
+  // ---- CHAT EFFECT (SIMPLIFIED & RELIABLE) ----
   useEffect(() => {
     if (currentScene === 7) {
+      // Reset messages and typing state when entering chat
+      setMessages([]);
+      setIsTyping(false);
+      setChatStarted(false);
+
+      // Clear any existing interval
+      if (chatIntervalRef.current) {
+        clearInterval(chatIntervalRef.current);
+        chatIntervalRef.current = null;
+      }
+
       let index = 0;
       let timeoutId = null;
-      let typingTimeout = null;
 
       const showNextMessage = () => {
         if (index < chatMessages.length) {
           const msg = chatMessages[index];
+          
           if (msg.from === 'her' && msg.typing) {
+            // Show typing indicator
             setIsTyping(true);
-            typingTimeout = setTimeout(() => {
+            timeoutId = setTimeout(() => {
               setIsTyping(false);
               setMessages(prev => [...prev, { from: msg.from, text: msg.text }]);
               index++;
+              // Scroll to bottom
               setTimeout(() => {
                 if (messagesEndRef.current) {
                   messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
                 }
               }, 100);
-              timeoutId = setTimeout(showNextMessage, 600);
+              // Schedule next message after a short delay
+              timeoutId = setTimeout(showNextMessage, 800);
             }, 1200);
           } else {
+            // Show message immediately (for 'me' messages)
             setMessages(prev => [...prev, { from: msg.from, text: msg.text }]);
             index++;
             setTimeout(() => {
@@ -374,25 +393,31 @@ const App = () => {
                 messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
               }
             }, 100);
-            timeoutId = setTimeout(showNextMessage, 600);
+            // Schedule next message after a delay
+            timeoutId = setTimeout(showNextMessage, 800);
           }
         } else {
+          // All messages shown - proceed to next scene
           setTimeout(() => {
             setCurrentScene(8);
           }, 2000);
         }
       };
 
-      const startDelay = setTimeout(showNextMessage, 500);
+      // Start the chat after a small delay
+      const startDelay = setTimeout(showNextMessage, 800);
 
       return () => {
         clearTimeout(timeoutId);
-        clearTimeout(typingTimeout);
         clearTimeout(startDelay);
+        if (chatIntervalRef.current) {
+          clearInterval(chatIntervalRef.current);
+          chatIntervalRef.current = null;
+        }
         setIsTyping(false);
       };
     }
-  }, [currentScene, chatMessages]);
+  }, [currentScene]);
 
   // ---- Functions ----
   const addMemory = () => {
@@ -827,6 +852,11 @@ const App = () => {
                 </div>
               )}
               <div ref={messagesEndRef} />
+              {messages.length === chatMessages.length && (
+                <div className="chat-end">
+                  <span>💖 She agreed to talk! 💖</span>
+                </div>
+              )}
             </div>
             <div className="chat-footer">
               <div className="chat-footer-info">
