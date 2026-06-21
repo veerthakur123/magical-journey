@@ -1837,3 +1837,139 @@ body {
   .final-couple { font-size: 40px; }
   .music-btn { width: 40px; height: 40px; font-size: 20px; top: 12px; right: 12px; }
 }
+/* ============================================
+   MOBILE FIXES
+   ============================================ */
+
+/* Fix touch interactions */
+.music-start-overlay {
+  touch-action: manipulation;
+}
+
+button, .btn-add-memory, .btn-continue-chat, .btn-meet-final, .btn-restart {
+  touch-action: manipulation;
+}
+
+/* Fix for small screens */
+@media (max-width: 480px) {
+  .scene-earth-wrapper {
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .earth-container {
+    width: 220px !important;
+    height: 220px !important;
+  }
+  
+  .drop-shape-space {
+    width: 40px;
+    height: 50px;
+  }
+  
+  .welcome-title {
+    font-size: 1.8rem !important;
+    letter-spacing: 3px !important;
+  }
+  
+  .welcome-container .story-text {
+    font-size: 1rem !important;
+  }
+  
+  .insta-scroll-container {
+    height: 80vh !important;
+    padding: 10px !important;
+  }
+  
+  .feed-scroll {
+    height: calc(80vh - 150px) !important;
+  }
+  
+  .chat-container {
+    height: 75vh !important;
+  }
+  
+  .music-start-prompt span {
+    font-size: 36px !important;
+  }
+  
+  .music-start-prompt p {
+    font-size: 14px !important;
+  }
+  
+  .music-btn {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 16px !important;
+    top: 8px !important;
+    right: 8px !important;
+  }
+  
+  .notification-item {
+    padding: 8px 12px !important;
+  }
+  
+  .notification-item .notification-text {
+    font-size: 12px !important;
+  }
+  
+  .boy-character {
+    transform: scale(0.6) !important;
+  }
+  
+  .girl-character {
+    transform: scale(0.7) !important;
+  }
+  
+  .found-profile-card-char {
+    padding: 16px !important;
+  }
+  
+  .follow-btn-real {
+    font-size: 14px !important;
+    padding: 10px 20px !important;
+  }
+  
+  .meet-card {
+    padding: 20px 16px !important;
+  }
+  
+  .meet-emoji {
+    font-size: 40px !important;
+  }
+  
+  .meet-card h2 {
+    font-size: 20px !important;
+  }
+  
+  .final-title {
+    font-size: 24px !important;
+  }
+  
+  .final-couple {
+    font-size: 32px !important;
+  }
+  
+  .final-hearts {
+    font-size: 22px !important;
+  }
+  
+  .btn-restart {
+    font-size: 14px !important;
+    padding: 10px 24px !important;
+  }
+  
+  .btn-meet-final {
+    font-size: 14px !important;
+    padding: 10px 20px !important;
+  }
+  
+  /* Reduce particles on mobile for performance */
+  .particle-earth {
+    display: none;
+  }
+  
+  .particle-earth:nth-child(-n+20) {
+    display: block;
+  }
+}

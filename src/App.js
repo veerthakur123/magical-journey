@@ -82,11 +82,11 @@ const App = () => {
   // ---- Effects ----
   useEffect(() => {
     const sparkles = [];
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 30; i++) {
       sparkles.push({
         x: Math.random() * 100,
         y: Math.random() * 100,
-        size: 1 + Math.random() * 3,
+        size: 1 + Math.random() * 2,
         delay: Math.random() * 5,
         speed: 0.5 + Math.random() * 1,
       });
@@ -94,40 +94,27 @@ const App = () => {
     setMagicSparkles(sparkles);
   }, []);
 
-  // // ---- MUSIC SETUP (uses public URL, no local file needed) ----
-  // useEffect(() => {
-  //   if (audioRef.current) {
-  //     audioRef.current.volume = 0.3;
-  //     audioRef.current.loop = true;
-  //     // Public MP3 that always works
-  //    //audioRef.current.src = 'C:\Users\pooja\Documents\SHAT\my-journey-app\public/music.mp3';
-  //     audioRef.current.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-  //     audioRef.current.load();
-  //   }
-  // }, []);
+  // ---- MUSIC SETUP ----
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.3;
+      audioRef.current.loop = true;
+      audioRef.current.src = '/music.mp3';
+      audioRef.current.onerror = () => {
+        console.warn('Local music not found, using fallback.');
+        audioRef.current.src = 'music.mp3';
+        audioRef.current.load();
+      };
+      audioRef.current.load();
+    }
+  }, []);
 
-  // ---- MUSIC SETUP (local file) ----
-useEffect(() => {
-  if (audioRef.current) {
-    audioRef.current.volume = 0.3;
-    audioRef.current.loop = true;
-    // Use the local file from public folder
-    audioRef.current.src = '/music.mp3';  // ✅ correct
-    audioRef.current.load();
-  }
-}, []);
-
-  // Try to play when user interacts with overlay
+  // Try to play when user interacts
   useEffect(() => {
     if (hasUserInteracted && audioRef.current) {
       audioRef.current.play()
-        .then(() => {
-          setIsMusicPlaying(true);
-        })
-        .catch((err) => {
-          console.warn('Music play failed:', err);
-          // Try again on next click
-        });
+        .then(() => setIsMusicPlaying(true))
+        .catch(() => {});
     }
   }, [hasUserInteracted]);
 
@@ -140,13 +127,7 @@ useEffect(() => {
       } else {
         audioRef.current.play()
           .then(() => setIsMusicPlaying(true))
-          .catch(() => {
-            // If play fails, try loading again
-            audioRef.current.load();
-            setTimeout(() => {
-              audioRef.current.play().catch(() => {});
-            }, 200);
-          });
+          .catch(() => {});
       }
     }
   };
@@ -157,6 +138,7 @@ useEffect(() => {
     </button>
   );
 
+  // ---- Rest of the effects (unchanged) ----
   useEffect(() => {
     if (currentScene === 0) {
       const interval = setInterval(() => {
@@ -232,7 +214,7 @@ useEffect(() => {
 
   const createExplosion = () => {
     const newParticles = [];
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 80; i++) {
       const angle = Math.random() * Math.PI * 2;
       const speed = 2 + Math.random() * 18;
       const colorHue = 10 + Math.random() * 30;
@@ -241,14 +223,14 @@ useEffect(() => {
         y: 52,
         vx: Math.cos(angle) * speed * (0.3 + Math.random() * 0.7),
         vy: Math.sin(angle) * speed * (0.3 + Math.random() * 0.7) - 6,
-        size: 3 + Math.random() * 10,
+        size: 3 + Math.random() * 8,
         life: 1,
         color: `hsl(${colorHue}, 100%, ${45 + Math.random() * 35}%)`,
         type: 'lava',
         gravity: 0.1 + Math.random() * 0.08,
       });
     }
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 40; i++) {
       const angle = Math.random() * Math.PI * 2;
       const speed = 6 + Math.random() * 20;
       newParticles.push({
@@ -256,7 +238,7 @@ useEffect(() => {
         y: 52,
         vx: Math.cos(angle) * speed * (0.4 + Math.random() * 0.6),
         vy: Math.sin(angle) * speed * (0.4 + Math.random() * 0.6) - 8,
-        size: 1 + Math.random() * 4,
+        size: 1 + Math.random() * 3,
         life: 1,
         color: `hsl(45, 100%, ${70 + Math.random() * 30}%)`,
         type: 'sparkle',
@@ -298,7 +280,7 @@ useEffect(() => {
     } else {
       setStoryTextIndex(0);
     }
-  }, [showStoryText]);
+  }, [showStoryText, storyTexts]);
 
   // Reset follow state when entering scene 3
   useEffect(() => {
@@ -410,7 +392,7 @@ useEffect(() => {
         setIsTyping(false);
       };
     }
-  }, [currentScene]);
+  }, [currentScene, chatMessages]);
 
   // ---- Functions ----
   const addMemory = () => {
@@ -434,17 +416,16 @@ useEffect(() => {
       <div className="scene-container scene-earth">
         <audio ref={audioRef} />
         
-        {/* Music start overlay */}
+        {/* Music start overlay - WITH TOUCH SUPPORT */}
         {!hasUserInteracted && (
           <div 
             className="music-start-overlay"
-            onClick={() => {
-              setHasUserInteracted(true);
-            }}
+            onClick={() => setHasUserInteracted(true)}
+            onTouchStart={() => setHasUserInteracted(true)}
           >
             <div className="music-start-prompt">
               <span>🎵</span>
-              <p>Click anywhere to start the journey</p>
+              <p>Tap anywhere to start the journey</p>
             </div>
           </div>
         )}
@@ -529,8 +510,8 @@ useEffect(() => {
           )}
 
           <div className="cosmic-rays">
-            {Array.from({ length: 16 }).map((_, i) => (
-              <div key={i} className="cosmic-ray" style={{ transform: `rotate(${i * 22.5}deg)`, animationDelay: `${i * 0.3}s` }} />
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="cosmic-ray" style={{ transform: `rotate(${i * 30}deg)`, animationDelay: `${i * 0.3}s` }} />
             ))}
           </div>
         </div>
@@ -735,6 +716,7 @@ useEffect(() => {
               <button 
                 className={`follow-btn-real ${followState}`}
                 onClick={handleFollow}
+                onTouchStart={handleFollow}
                 disabled={followState !== 'idle'}
               >
                 {followState === 'idle' && 'Follow'}
@@ -793,11 +775,11 @@ useEffect(() => {
               <div className="memory-section">
                 <h3>📝 Add a Memory</h3>
                 {!showMemoryInput ? (
-                  <button className="btn-add-memory" onClick={() => setShowMemoryInput(true)}>✨ Remember a Moment</button>
+                  <button className="btn-add-memory" onClick={() => setShowMemoryInput(true)} onTouchStart={() => setShowMemoryInput(true)}>✨ Remember a Moment</button>
                 ) : (
                   <div className="memory-input-group">
                     <textarea value={newMemory} onChange={(e) => setNewMemory(e.target.value)} placeholder="What happened? What did you feel? 💭" rows="3" />
-                    <div className="memory-actions"><button onClick={addMemory} className="btn-save-memory">💾 Save</button><button onClick={() => setShowMemoryInput(false)} className="btn-cancel">Cancel</button></div>
+                    <div className="memory-actions"><button onClick={addMemory} className="btn-save-memory" onTouchStart={addMemory}>💾 Save</button><button onClick={() => setShowMemoryInput(false)} className="btn-cancel">Cancel</button></div>
                   </div>
                 )}
                 {memories.length > 0 && (
@@ -808,7 +790,7 @@ useEffect(() => {
                   </div>
                 )}
               </div>
-              <button className="btn-continue-chat" onClick={() => setCurrentScene(7)}>
+              <button className="btn-continue-chat" onClick={() => setCurrentScene(7)} onTouchStart={() => setCurrentScene(7)}>
                 💬 Start Chatting with Shataakshi
               </button>
             </div>
@@ -908,7 +890,7 @@ useEffect(() => {
               <p className="pending-message">✨ "Good things take time, and we're worth the wait" ✨</p>
               <p className="pending-sub-message">🤞 Praying she says yes... 🤞</p>
               
-              <button className="btn-meet-final" onClick={() => setCurrentScene(9)}>
+              <button className="btn-meet-final" onClick={() => setCurrentScene(9)} onTouchStart={() => setCurrentScene(9)}>
                 🌟 Continue Our Story 🌟
               </button>
             </div>
@@ -936,7 +918,7 @@ useEffect(() => {
             <div className="final-hearts">
               <span>💖</span><span>💕</span><span>💗</span><span>💖</span><span>💕</span><span>💗</span>
             </div>
-            <button className="btn-restart" onClick={() => window.location.reload()}>
+            <button className="btn-restart" onClick={() => window.location.reload()} onTouchStart={() => window.location.reload()}>
               🔄 Relive the Magic
             </button>
           </div>
